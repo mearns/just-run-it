@@ -17,7 +17,6 @@
         "command",
         "exec",
         "child_process",
-        "child",
         "process"
     ],
     "author": "Brian Mearns",
