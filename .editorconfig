@@ -1,0 +1,23 @@
+# editorconfig.org
+root = true
+
+# General, if not overridden below.
+[*]
+end_of_line = LF
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+# Follow conventions
+[*.json]
+indent_size = 4
+
+[/node_modules/**]
+charset = none
+end_of_line = none
+insert_final_newline = none
+trim_trailing_whitespace = none
+indent_style = none
+indent_size = none

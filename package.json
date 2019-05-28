@@ -1,0 +1,53 @@
+{
+    "name": "just-run-it",
+    "version": "0.1.0",
+    "description": "A simple and straightforward javascript library for running system commands",
+    "main": "index.js",
+    "scripts": {},
+    "files": [
+        "index.js"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mearns/just-run-it.git"
+    },
+    "keywords": [
+        "spawn",
+        "shell",
+        "command",
+        "exec",
+        "child_process",
+        "child",
+        "process"
+    ],
+    "author": "Brian Mearns",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/mearns/just-run-it/issues"
+    },
+    "homepage": "https://github.com/mearns/just-run-it#readme",
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
+    },
+    "devDependencies": {
+        "eslint": "^5.16.0",
+        "eslint-config-prettier": "^4.3.0",
+        "eslint-config-standard": "^12.0.0",
+        "eslint-plugin-import": "^2.17.2",
+        "eslint-plugin-node": "^9.0.1",
+        "eslint-plugin-prettier": "^3.1.0",
+        "eslint-plugin-promise": "^4.1.1",
+        "eslint-plugin-standard": "^4.0.0",
+        "husky": "^2.3.0",
+        "prettier": "^1.17.1",
+        "pretty-quick": "^1.10.0"
+    },
+    "optionalDependencies": {
+        "ansi-colors": "^3.2.4",
+        "chalk": "^2.4.2",
+        "colorette": "^1.0.7",
+        "kleur": "^3.0.3"
+    }
+}
