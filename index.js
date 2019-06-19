@@ -177,13 +177,6 @@ module.exports = function justRunThis(
 ) {
     const errorSource = new Error();
     const shellCommand = prettyCommand(_args, env);
-    const printCommand = () => {
-        console.log(color.prompt("> ") + color.command(shellCommand));
-    };
-    if (dryRun) {
-        printCommand();
-        return Promise.resolve();
-    }
     const [command, ...args] = _args;
     let stdout = null;
     let stderr = null;
@@ -209,6 +202,13 @@ module.exports = function justRunThis(
     };
     return new Promise((resolve, reject) => {
         const color = getColorizer(_color);
+        const printCommand = () => {
+            console.log(color.prompt("> ") + color.command(shellCommand));
+        };
+        if (dryRun) {
+            printCommand();
+            return Promise.resolve();
+        }
         if (!quiet) {
             printCommand();
         }
