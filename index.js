@@ -65,20 +65,26 @@ const hasSpacesRe = /\s/;
 const hasSingleQuotesRe = /'/;
 const hasShellCharsRe = /[&|;!$"\\]/;
 
-function prettyCommand(args) {
-    return args
-        .map(arg => {
-            const hasSpaces = hasSpacesRe.test(arg);
-            const hasSingleQuotes = hasSingleQuotesRe.test(arg);
-            const hasShellChars = hasShellCharsRe.test(arg);
-            if (hasShellChars) {
-                return makeSingleQuoted(arg);
-            } else if (hasSingleQuotes || hasSpaces) {
-                return safeMakeDoubleQuoted(arg);
-            }
-            return arg;
-        })
-        .join(" ");
+function prettyValue(arg) {
+    const hasSpaces = hasSpacesRe.test(arg);
+    const hasSingleQuotes = hasSingleQuotesRe.test(arg);
+    const hasShellChars = hasShellCharsRe.test(arg);
+    if (hasShellChars) {
+        return makeSingleQuoted(arg);
+    } else if (hasSingleQuotes || hasSpaces) {
+        return safeMakeDoubleQuoted(arg);
+    }
+    return arg;
+}
+
+function prettyCommand(args, env) {
+    const envOverride =
+        Object.keys(env).length === 0
+            ? ""
+            : Object.entries(env)
+                  .map(([k, v]) => `${prettyValue(k)}=${prettyValue(v)}`)
+                  .join(" ") + " ";
+    return envOverride + args.map(prettyValue).join(" ");
 }
 
 function getColorizer(_color) {
@@ -108,7 +114,7 @@ function getColorizer(_color) {
  * the command itself).
  * @param {Object} [config]
  * @param {Object} [config.env={}] An object of environment variables. If not given, the
- * current process's environment is used. If this is given, it **merged**
+ * current process's environment is used. If this is given, it is **merged**
  * with the current process's environment (overwriting any existing env vars for the child).
  * @param {boolean} [config.capture=true] Whether or not to capture STDOUT and STDERR into
  * in-memory buffers. This is done by default so they can be returned in the fulfillment
@@ -165,11 +171,19 @@ module.exports = function justRunThis(
         stdin = process.stdin,
         encoding = "utf8",
         propagateSignals = true,
-        color: _color = true
+        color: _color = true,
+        dryRun = false
     } = {}
 ) {
     const errorSource = new Error();
-    const shellCommand = prettyCommand(_args);
+    const shellCommand = prettyCommand(_args, env);
+    const printCommand = () => {
+        console.log(color.prompt("> ") + color.command(shellCommand));
+    };
+    if (dryRun) {
+        printCommand();
+        return Promise.resolve();
+    }
     const [command, ...args] = _args;
     let stdout = null;
     let stderr = null;
@@ -180,7 +194,7 @@ module.exports = function justRunThis(
     const createError = (error, props = {}) => {
         const errorMessage = error instanceof Error ? error.message : error;
         const e = new Error(errorMessage);
-        e.stack = errorSource.stack;
+        e.stack = errorSource.stack.replace(/^Error/, `Error: ${errorMessage}`);
         if (error instanceof Error) {
             e.cause = error;
             e.stack += `\n  caused by: ${error.stack}`;
@@ -196,7 +210,7 @@ module.exports = function justRunThis(
     return new Promise((resolve, reject) => {
         const color = getColorizer(_color);
         if (!quiet) {
-            console.log(color.prompt("> ") + color.command(shellCommand));
+            printCommand();
         }
         const outputOpt = capture || !quiet ? "pipe" : "ignore";
         const proc = childProcess.spawn(command, args, {
