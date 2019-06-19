@@ -207,7 +207,8 @@ module.exports = function justRunThis(
         };
         if (dryRun) {
             printCommand();
-            return Promise.resolve();
+            resolve();
+            return;
         }
         if (!quiet) {
             printCommand();
