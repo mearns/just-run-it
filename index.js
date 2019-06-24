@@ -203,15 +203,14 @@ module.exports = function justRunThis(
     return new Promise((resolve, reject) => {
         const color = getColorizer(_color);
         const printCommand = () => {
-            console.log(color.prompt("> ") + color.command(shellCommand));
+            if (!quiet) {
+                console.log(color.prompt("> ") + color.command(shellCommand));
+            }
         };
+        printCommand();
         if (dryRun) {
-            printCommand();
             resolve();
             return;
-        }
-        if (!quiet) {
-            printCommand();
         }
         const outputOpt = capture || !quiet ? "pipe" : "ignore";
         const proc = childProcess.spawn(command, args, {
