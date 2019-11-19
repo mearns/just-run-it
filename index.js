@@ -15,9 +15,9 @@ const defaultColor = findColorPackage(
 
 function findColorPackage(...packages) {
     while (packages.length) {
-        const package = packages.shift();
+        const pkg = packages.shift();
         try {
-            return require(package);
+            return require(pkg);
         } catch (error) {
             // ignore optional dependencies.
             continue;
