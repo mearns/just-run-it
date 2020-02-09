@@ -1,6 +1,6 @@
 {
     "name": "just-run-it",
-    "version": "0.2.5",
+    "version": "0.2.5-rc.1",
     "description": "A simple and straightforward javascript library for running system commands",
     "main": "index.js",
     "scripts": {},

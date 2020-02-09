@@ -31,7 +31,7 @@ declare module "just-run-it" {
      * strings. See {@link CaptureResult} for more. If `dryRun` is enabled, then the promise will resolve with `undefined`.
      * If it fails, the promise will reject with a {@link JustRunItError}.
      */
-    export default function justRunIt(
+    export type JustRunIt = (
         args: string[],
         options: {
             /**
@@ -52,7 +52,10 @@ declare module "just-run-it" {
             propagateSignals?: boolean;
             color?: boolean | Colorizer;
         }
-    ): Promise<undefined | Result | CaptureResult>;
+    ) => Promise<undefined | Result | CaptureResult>;
+
+    const justRunIt: JustRunIt;
+    export default justRunIt;
 
     export interface Result {
         code: number;
