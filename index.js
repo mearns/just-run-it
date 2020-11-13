@@ -1,4 +1,5 @@
 const childProcess = require("child_process");
+const { Stream } = require("stream");
 
 const passThruColorizer = s => s;
 const defaultColor = findColorPackage(
@@ -123,8 +124,14 @@ function getColorizer(_color) {
  * @param {boolean} [config.quiet=false] Default behavior is to write the command being
  * executed, plus STDOUT and STDERR from the child process to this process's output
  * streams. Set this to ``true`` to supress this.
- * @param {Stream} [config.stdin] Optionally, provide a readable stream that will be
- * used as the sub process's STDIN. Otherwise, this process's STDIN is used.
+ * @param {null|Stream|Buffer|string|number} [config.stdin] Optionally, provide STDIN for the subprocess.
+ * If `undefined` or not given, then the current process's STDIN is used. If `null`, then the STDIN of
+ * the subprocess will be connected to a closed stream (e.g. /dev/null). If a `Stream`, the stream is used,
+ * but keep in mind that the Stream must have an underlying file-descriptor (see
+ * https://nodejs.org/api/child_process.html#child_process_options_stdio). If a `Buffer` or a `string`,
+ * then the contents are written to the subprocess's STDIN which is then closed (encoding for a string
+ * is "utf-8", if you need another encoding, turn it into a `Buffer` yourself). If a number, it is
+ * passed as the file descriptor to use for STDIN.
  * @param {String} [config.encoding="utf8"] Optionally, provide the encoding for
  * the STDOUT and STDERR streams from the child process.
  * @param {boolean} [config.propagateSignals=true] By default, SIGINT and SIGTERM signals
@@ -213,8 +220,9 @@ module.exports = function justRunThis(
             return;
         }
         const outputOpt = capture || !quiet ? "pipe" : "ignore";
+        const [stdinOption, feedStdin] = getStdinOption(stdin);
         const proc = childProcess.spawn(command, args, {
-            stdio: [stdin, outputOpt, outputOpt],
+            stdio: [stdinOption, outputOpt, outputOpt],
             env: {
                 ...process.env,
                 ...env
@@ -244,6 +252,7 @@ module.exports = function justRunThis(
                 );
             });
         }
+        feedStdin(proc.stdin);
         proc.on("error", error => reject(createError(error)));
         proc.on("exit", (code, signal) => {
             if (code === SUCCESSFUL_EXIT_CODE) {
@@ -276,3 +285,31 @@ module.exports = function justRunThis(
         });
     });
 };
+
+function getStdinOption(stdin, encoding = "utf-8") {
+    if (stdin instanceof Stream) {
+        return [stdin, () => {}];
+    } else if (stdin instanceof Buffer) {
+        return [
+            "pipe",
+            pipe => {
+                pipe.write(stdin);
+                pipe.end();
+            }
+        ];
+    } else if (typeof stdin === "string") {
+        return [
+            "pipe",
+            pipe => {
+                pipe.write(stdin, encoding);
+                pipe.end();
+            }
+        ];
+    } else if (stdin === null) {
+        return ["ignore", () => {}];
+    } else if (typeof stdin === "undefined") {
+        return process.stdin;
+    } else {
+        return [stdin, () => {}];
+    }
+}

@@ -47,7 +47,17 @@ declare module "just-run-it" {
              */
             capture?: boolean;
             quiet?: boolean;
-            stdin?: ReadableStream;
+            /**
+             * Optionally, provide STDIN for the subprocess.
+             * If `undefined` or not given, then the current process's STDIN is used. If `null`, then the STDIN of
+             * the subprocess will be connected to a closed stream (e.g. /dev/null). If a `Stream`, the stream is used,
+             * but keep in mind that the Stream must have an underlying file-descriptor (see
+             * https://nodejs.org/api/child_process.html#child_process_options_stdio). If a `Buffer` or a `string`,
+             * then the contents are written to the subprocess's STDIN which is then closed (encoding for a string
+             * is "utf-8", if you need another encoding, turn it into a `Buffer` yourself). If a number, it is
+             * passed as the file descriptor to use for STDIN.
+             */
+            stdin?: null | ReadableStream | Buffer | string | number;
             encoding?: string;
             propagateSignals?: boolean;
             color?: boolean | Colorizer;
